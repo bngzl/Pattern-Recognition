@@ -1,7 +1,7 @@
 % Question 1 
+% Compute mean face 
+N = 52*8; 
+sum_x_train = x_train * ones([416,1]); 
+mean_face = sum_x_train.*(1/N); 
 
-% Computing the average face vector 
-N = 
-
-sum_x = x_train*ones([416,1]); 
-ave_x = 
+% Compute covariance matrix S 
