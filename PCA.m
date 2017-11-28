@@ -15,14 +15,15 @@ S = (1/N)*(A*A');
 evals_u = diag(evals); 
 u = normc(u); % Normalise eigenvectors 
 
-% No. of zero eigenvalues: 
-% no_of_zero_evals = size(find(evals));  
+non_zero_evals = size(find(evals_u(:)>0.001)); % no. of evecs with non zero evals <- check this! 
 
 % Compute (1/N)ATA (PCA when D >> N) 
 S2 = (1/N)*(A'*A); 
 [v,evals] = eig(S2); 
 evals_v = diag(evals); 
 v = normc(v); 
+
+% Determine if v and evals_v are identical to u and evals_u 
 
 % The M evals_v of ATA correspond to the M largest evals_u of AAT
 
