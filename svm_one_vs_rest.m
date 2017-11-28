@@ -34,5 +34,6 @@ for t = 1:52
     models(t) = {svm};
 end
 
-save("rawsvm_one_vs_rest.mat","models");
+mkdir("svm_models");
+save("svm_models/svm_raw_one_vs_rest.mat","models");
 transpose(testAccuracy)
