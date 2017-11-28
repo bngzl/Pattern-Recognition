@@ -4,7 +4,10 @@
 models = cell(52);
 testAccuracy = zeros(1,52);
 
-for t = 1:52
+parpool(2);
+
+parfor t = 1:52
+    fprintf("Training SVM for face %d\n",t);
     % preprocess training results
     y = zeros(1,416);
     for i = 1:8
