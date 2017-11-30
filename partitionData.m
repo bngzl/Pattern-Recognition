@@ -1,9 +1,8 @@
-function [x_train, y_train, x_test, y_test] = partitionData(name,X,labels,train_frac)
+function [] = partitionData(X,labels,train_frac)
 % Partitions data into training and tset sets
 %   Splits data randomly, we should only need to do this once
 
 dims = size(X);
-
 test_frac = 1-train_frac;
 nTrain = uint16(train_frac * 10);
 nTest = uint16(test_frac * 10);
@@ -11,6 +10,14 @@ nClass = 52;
 nFeatures = dims(1);
 nTrainSamples = 52*nTrain;
 nTestSamples = 52*nTest;
+
+data = containers.Map;
+data('nTrain') = nTrain;
+data('nTest') = nTest;
+data('nClass') = nClass;
+data('nFeatures') = nFeatures;
+data('nTrainSamples') = nTrainSamples;
+data('nTestSamples') = nTestSamples;
 
 x_train = zeros(nFeatures,nTrain*52);
 y_train = zeros(1,nTrain*52);
@@ -33,5 +40,10 @@ for classes = 1:nClass
     
 end
 
-save("data/" + name + ".mat","nClass","nTrainSamples","nTestSamples","nFeatures","x_train","y_train","nTrain","x_test","y_test","nTest");
+data('x_train') = x_train;
+data('y_train') = y_train;
+data('x_test') = x_test;
+data('y_test') = y_test;
+
+save("data/face_split_" + string(train_frac) + ".mat",'data');
 
