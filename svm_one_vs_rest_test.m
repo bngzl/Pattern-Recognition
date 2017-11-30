@@ -11,6 +11,6 @@ for c=1:nClass
     confidenceMat(c,:) = s(:,2)';
 end
 [v,i] = max(confidenceMat,[],1);
-y_pred = i';
-
+diff = i-y_test;
+accuracy = sum(diff(i)==0)/length(diff)
 
