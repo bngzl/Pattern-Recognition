@@ -1,7 +1,7 @@
 % Question 1 
 % Initialisation
 clear all;
-load partitionedData.mat; 
+load data/partitionedData.mat; 
 [D, N] = size(x_train); % D=W*H of each image, N is no. of samples
 
 % Compute mean face 

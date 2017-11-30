@@ -5,9 +5,9 @@ load data/data_raw_0.7.mat
 models = cell(1,nClass);
 testAccuracy = zeros(1,nClass);
 
-% parpool(2);
+parpool(2);
 
-for t = 1:nClass
+parfor t = 1:nClass
     fprintf("Training SVM for face %d\n",t);
     % preprocess training results
     y = zeros(1,nTrain*nClass);
@@ -38,17 +38,17 @@ for t = 1:nClass
     models(t) = {svm};
 end
 
-mkdir("svm_models");
-save("svm_models/svm_raw_one_vs_rest.mat","models");
+mkdir('svm_models');
+save('svm_models/svm_raw_one_vs_rest.mat','models');
 
 % one-vs-rest assignment based on confidence value
-confidenceMat = zeros(nClass,nTest*nClass);
-
-for c=1:nClass
-    [p,s] = models{c}.predict(x_test');
-    confidenceMat(c,:) = s(2)';
-end
-[v,i] = max(confidenceMat,[],1);
-y_pred = i';
+% confidenceMat = zeros(nClass,nTest*nClass);
+% 
+% for c=1:nClass
+%     [p,s] = models{c}.predict(x_test');
+%     confidenceMat(c,:) = s(2)';
+% end
+% [v,i] = max(confidenceMat,[],1);
+% y_pred = i';
 
 
