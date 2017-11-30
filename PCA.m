@@ -24,6 +24,14 @@ evals_v = diag(evals);
 v = normc(v); 
 
 % Determine if v and evals_v are identical to u and evals_u 
+a = 0; 
+for i = 1:size(evals_v,1) 
+    if evals_v(i,1)==evals_u(i,1)
+        a=a+1;
+    end 
+end
+
+%c = intersect(evals_v, evals_u); 
 
 % The M evals_v of ATA correspond to the M largest evals_u of AAT
 
