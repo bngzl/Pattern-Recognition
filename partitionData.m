@@ -36,8 +36,7 @@ for classes = 1:nClass
     for i = 1:length(ind_test)
         x_test(:,i+(classes-1)*nTest) = X(:,ind_test(i)+(classes-1)*10);
         y_test(i+(classes-1)*nTest) = labels(ind_test(i)+(classes-1)*10);
-    end
-    
+    end 
 end
 
 data('x_train') = x_train;

@@ -1,12 +1,16 @@
 % Question 1 
 % Initialisation
 clear all;
-load data/partitionedData.mat; 
+load data/face_split_0.7.mat;
+
+x_train = data('x_train');
+
 [D, N] = size(x_train); % D=W*H of each image, N is no. of samples
 
 % Compute mean face 
 sum_x_train = x_train * ones([N,1]); 
 mean_face = sum_x_train.*(1/N); 
+% can use mean_face = mean(x_train,2);
 
 % Compute covariance matrix S 
 A = x_train - mean_face*ones([1,N]); 

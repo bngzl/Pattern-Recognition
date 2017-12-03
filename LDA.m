@@ -1,13 +1,22 @@
-function [y_lda_pred, accuracy] = LDA(data, M_lda)
+function [y_lda_pred, Sw, Sb] = LDA(data, M_lda)
 % Calculates the accuracy of LDA after projecting onto M_lda eigenvectors
 % Takes in the data container (hint: type in 'data.keys')
     
     % Unpack variables from data
-    x_train = data('x_train');
+    if isKey(data, 'x_pca_train')
+        x_train = data('x_pca_train');
+        x_test = data('x_pca_test');    
+        nFeatures = data('M_pca');
+        fprintf("Using PCA transformed data (M_pca = %d)\n", nFeatures)
+    else 
+        x_train = data('x_train');
+        x_test = data('x_test');
+        nFeatures = data('nFeatures');
+        fprintf("Using original face data...\n")
+    end
     y_train = data('y_train');
-    x_test = data('x_test');
     y_test = data('y_test');
-    nFeatures = data('nFeatures');
+    
     nClass = data('nClass');
     nTrain = data('nTrain');
     nTrainSamples = data('nTrainSamples');
@@ -39,7 +48,6 @@ function [y_lda_pred, accuracy] = LDA(data, M_lda)
     end
     [Ws, vals] = eig(inv(Sw)*Sb);
 
-    plot(abs(diag(vals)))
     % Obtain projection matrix from M_lda eigenvectors
     % based on M_lda eigenvalues
     P = Ws(:,1:M_lda)';
@@ -65,10 +73,5 @@ function [y_lda_pred, accuracy] = LDA(data, M_lda)
         mins(i) = curr_min;
         y_lda_pred(i) = curr_pred;
     end
-
-    % Calculating accuracy
-    diff = y_lda_pred - y_test;
-    y_lda_pred
-    accuracy = sum(diff(i)==0)/length(diff)
     
 end
