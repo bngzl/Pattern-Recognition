@@ -3,8 +3,6 @@
 clear all;
 load data/face_split_0.7.mat;
 
-x_train = data('x_train');
-
 % Unpack data: 
 x_train = data('x_train');
 x_test = data('x_test');
@@ -38,36 +36,15 @@ evals_u = flipud(diag(Du));
 v = fliplr(v); 
 evals_v = flipud(diag(Dv)); 
 
-% Pull out the largest M eigenvectors: 
+% Nearest Neighbour Classification: 
+[u_m, ~] = eigs(Sf, M_pca); 
+w_train = (A'*u_m)';
 
-% for M_pca = 1:50 
-%     [u_m, Du_m] = eigs(Sf, M_pca); 
-%     u_m = fliplr(u_m); 
-%     a = (A'*u_m); 
-%     res = (a*u_m')'+ mean_face*ones(1,364); 
-%     showImage(res(:,1));
-% end
-M_pca = 1
-[u_m, Du_m] = eigs(Sf, M_pca); 
-a = (A'*u_m); % Project training face onto eigenvector
-res = (a*u_m')'+ mean_face*ones(1,364); % Reconstruct as linear comb of faces 
-figure; 
-showImage(res(:,1));
-
-M_pca = 250
-[u_m, Du_m] = eigs(Sf, M_pca); 
-a = (A'*u_m); 
-res = (a*u_m')'+ mean_face*ones(1,364); 
-figure; 
-showImage(res(:,1));
- 
+A_test = x_test - mean_face * ones(1, nTestSamples); 
+w_test = (A_test'*u_m)'; 
 
 
-% [u_m, Du_m] = eigs(Sf, M_pca);
-% u_m = fliplr(u_m); 
-% 
-% comb = (A'*u_m);
-% res = mean_face*ones(1,364) + comb'; 
+
 
 
 % Accuracy vs number of eigenvector plot 
