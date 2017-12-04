@@ -26,25 +26,48 @@ St = A' * A ./ double(nTrainSamples);
 [v, Dv] = eig(St); 
 
 u = fliplr(u); 
-v = fliplr(v); 
-
 evals_u = flipud(diag(Du)); 
+
+% Plot eigenvalues against index 
+% plot(evals_u); 
+% title('Eigenvalues against index'); 
+% ylabel('Eigenvalues'); 
+% xlabel('Index'); 
+% xlim([0,250]); 
+
+v = fliplr(v); 
 evals_v = flipud(diag(Dv)); 
 
-% Check u(i) = Av(i): 
-for i = 1:nTrainSamples
-    tf = isequal(u(:,i),normc(A*v(:,i)));  
-    if tf == 1
-        fprintf('same') 
-    end
-end
-
 % Pull out the largest M eigenvectors: 
-u_m = eigs(Sf, m_pca) 
+
+% for M_pca = 1:50 
+%     [u_m, Du_m] = eigs(Sf, M_pca); 
+%     u_m = fliplr(u_m); 
+%     a = (A'*u_m); 
+%     res = (a*u_m')'+ mean_face*ones(1,364); 
+%     showImage(res(:,1));
+% end
+M_pca = 1
+[u_m, Du_m] = eigs(Sf, M_pca); 
+a = (A'*u_m); % Project training face onto eigenvector
+res = (a*u_m')'+ mean_face*ones(1,364); 
+figure; 
+showImage(res(:,1));
+
+M_pca = 250
+[u_m, Du_m] = eigs(Sf, M_pca); 
+a = (A'*u_m); 
+res = (a*u_m')'+ mean_face*ones(1,364); 
+figure; 
+showImage(res(:,1));
+ 
 
 
-% Determine if v and evals_v are identical to u and evals_u 
+% [u_m, Du_m] = eigs(Sf, M_pca);
+% u_m = fliplr(u_m); 
+% 
+% comb = (A'*u_m);
+% res = mean_face*ones(1,364) + comb'; 
 
-%c = intersect(evals_v, evals_u); 
 
 % Accuracy vs number of eigenvector plot 
