@@ -37,6 +37,7 @@ v = fliplr(v);
 evals_v = flipud(diag(Dv)); 
 
 % Nearest Neighbour Classification: 
+M_pca = 20; 
 [u_m, ~] = eigs(Sf, M_pca); 
 w_train = (A'*u_m)';
 
@@ -44,7 +45,9 @@ A_test = x_test - mean_face * ones(1, nTestSamples);
 w_test = (A_test'*u_m)'; 
 
 
-
+    
+        
+        
 
 
 % Accuracy vs number of eigenvector plot 
