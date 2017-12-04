@@ -1,5 +1,4 @@
 function [] = PCA_bing(data, M_pca)
-%because I need it to do my shit bng, I have no time to wait
 
 % unpack data
 x_train = data('x_train');
@@ -7,7 +6,6 @@ x_test = data('x_test');
 nTrainSamples = data('nTrainSamples');
 nTestSamples = data('nTestSamples');
 nFeatures = data('nFeatures');
-
 
 % mean face
 mean_face = mean(x_train,2);

@@ -40,7 +40,7 @@ for i = 1:nTrainSamples
 end
 
 % Pull out the largest M eigenvectors: 
-[u_m, Du_m] = eigs(Sf, M_pca)
+u_m = eigs(Sf, m_pca) 
 
 
 % Determine if v and evals_v are identical to u and evals_u 
