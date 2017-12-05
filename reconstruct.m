@@ -1,9 +1,6 @@
-function[w, x_estimate] = reconstruct(M_pca, i, nTrainSamples, A, Sf, mean_face)
+function[x_estimate] = reconstruct(M_pca, nTrainSamples, x_normalised, Sf, x_mean)
 % sample i 
-
 [u_m, ~] = eigs(Sf, M_pca); 
-w = (A'*u_m)';
-x_estimate = mean_face*ones(1,nTrainSamples) + (w'*u_m')'; 
-showImage(x_estimate(:,i));
-
+w = (x_normalised'*u_m)';
+x_estimate = x_mean*ones(1,nTrainSamples) + (w'*u_m')'; 
 end
