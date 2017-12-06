@@ -43,17 +43,21 @@ evals_v = sort(diag(Dv), 'descend');
 nonzero_evals_u = size(find(abs(evals_u) > 0.00001)); 
 nonzero_evals_v = size(find(abs(evals_u) > 0.00001));
 
-M_pca = 100;
+M_pca = 200;
 error = zeros(1, M_pca); 
+x_normalised_test = []; 
 % Training/Theoretical Reconstruction error: 
-for i = 1:M_pca
-    error(i) = sum(evals_u(i+1));  
-end
-plot(error);
+% for i = 1:M_pca
+%     error(i) = sum(evals_u(i+1));   
+% end
+% plot(error);
+
+% reconstruct(M_pca, 1, nTrainSamples, x_normalised, Sf, x_mean); 
 
 
+% Test Reconstruction error: 
+[u_m, ~] = eigs(Sf, M_pca); 
+x_normalised_test = x_test - x_mean*ones(1,nTestSamples); 
+w = (x_normalised_test'*u_m)'; 
 
-
-M_pca = 150; % Largest M Eigenvalues 
-[u_m, Du_m] = eigs (Sf, M_pca); 
 
