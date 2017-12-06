@@ -43,22 +43,27 @@ evals_v = sort(diag(Dv), 'descend');
 nonzero_evals_u = size(find(abs(evals_u) > 0.00001)); 
 nonzero_evals_v = size(find(abs(evals_u) > 0.00001));
 
-M_pca = 200;
-error = zeros(1, M_pca); 
-x_normalised_test = []; 
+M_pca = 100;
+[u_m, Du_m] = eigs(Sf, M_pca); 
+x_estimate = reconstruct(u_m, nTrainSamples, x_normalised, x_mean); 
+
+
+train_error = zeros(1, M_pca); 
 % Training/Theoretical Reconstruction error: 
 % for i = 1:M_pca
-%     error(i) = sum(evals_u(i+1));   
+%     train_error(i) = sum(evals_u(i+1));   
 % end
-% plot(error);
+% plot(train_error);
 
 % reconstruct(M_pca, 1, nTrainSamples, x_normalised, Sf, x_mean); 
 
 
-% Test Reconstruction error: 
-
-[u_m, ~] = eigs(Sf, M_pca); 
+% Test Reconstruction error:  
 x_normalised_test = x_test - x_mean*ones(1,nTestSamples); 
-x_normalised_tes
+x_test_estimate = reconstruct(u_m, nTestSamples, x_normalised_test, x_mean);
+
+test_error = (vecnorm(x_test - x_test_estimate).^2) * ones(nTestSamples, 1);\
+test_error = test_error./nTestSamples; 
+
 
 
