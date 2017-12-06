@@ -43,27 +43,37 @@ evals_v = sort(diag(Dv), 'descend');
 nonzero_evals_u = size(find(abs(evals_u) > 0.00001)); 
 nonzero_evals_v = size(find(abs(evals_u) > 0.00001));
 
-M_pca = 150;
-[u_m, Du_m] = eigs(Sf, M_pca); 
-x_estimate = reconstruct(u_m, nTrainSamples, x_normalised, x_mean); 
 
+M_pca = 200;
+theoretical_error = zeros(1,M_pca); 
+test_error = zeros(1, M_pca); 
+train_error = zeros(1, M_pca);
 
-train_error = zeros(1, M_pca); 
-% Training/Theoretical Reconstruction error: 
-% for i = 1:M_pca
-%     train_error(i) = sum(evals_u(i+1));   
-% end
-% plot(train_error);
-
-% reconstruct(M_pca, 1, nTrainSamples, x_normalised, Sf, x_mean); 
-
-
-% Test Reconstruction error:  
 x_normalised_test = x_test - x_mean*ones(1,nTestSamples); 
-x_test_estimate = reconstruct(u_m, nTestSamples, x_normalised_test, x_mean);
+x_normalised_train = x_train - x_mean*ones(1,nTrainSamples); 
 
-test_error = (vecnorm(x_test - x_test_estimate).^2) * ones(nTestSamples, 1);
-test_error = test_error/double(nTestSamples); 
+% Training/Theoretical Reconstruction error: 
+for i = 1:M_pca
+    theoretical_error(i) = evals_u(i+1:end)'*ones(2576-i,1);
+    
+    [u_m, Du_m] = eigs(Sf, i); % Extract M largest evals and corresponding evecs
+    x_test_estimate = reconstruct(u_m, nTestSamples, x_normalised_test, x_mean);
+    x_train_estimate = reconstruct(u_m, nTrainSamples, x_normalised_train, x_mean);
+    
+    % Reconstruction error:  
+    test_error(i) = (vecnorm(x_test - x_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+    train_error(i) = (vecnorm(x_train - x_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+end
+plot(theoretical_error);
+hold on; 
+plot(train_error);
+hold on;
+plot(test_error); 
+
+title('Error with Varying M Eigenvectors');
+ylabel ('Reconstruction Error');
+xlabel ('M');
+legend('Theoretical error','Train error','Test error'); 
 
 
 
