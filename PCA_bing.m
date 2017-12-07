@@ -1,4 +1,4 @@
-function [] = PCA_bing(data, M_pca)
+function [P] = PCA_bing(data, M_pca)
 %because I need it to do my shit bng, I have no time to wait
 
 % unpack data
