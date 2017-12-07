@@ -13,8 +13,7 @@ y_test = data('y_test');
 
 reconstruction_error = zeros(data('nClass'),nTestSamples);
 M_pca = 3; 
-%I = zeros(data('nClass'),nTestSamples); 
-labels = y_test'; 
+I = zeros(data('nClass'),nTestSamples); 
 
 for i = 1:nClass
     % Separate data for all of i class: 
@@ -30,10 +29,7 @@ for i = 1:nClass
     X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
     X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
     reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
-    % Cols of reconstruction_error are the test samples, rows are the
-    % errors for corresponding classes 
 end
 
 [reconstruction_error, I] = sort(reconstruction_error); 
-correct_prediction_alternate = sum(I(1,:)' == labels); 
-accuracy_alternate = double (correct_prediction_alternate)/ double(nTestSamples);
+I(1,:) 
