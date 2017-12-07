@@ -1,5 +1,5 @@
 function [] = partitionData(X,labels,train_frac)
-% Partitions data into training and tset sets
+% Partitions data into training and test sets
 %   Splits data randomly, we should only need to do this once
 
 dims = size(X);
