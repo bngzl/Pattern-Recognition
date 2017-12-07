@@ -1,4 +1,9 @@
+<<<<<<< HEAD
+function [P] = PCA_bing(data, M_pca)
+%because I need it to do my shit bng, I have no time to wait
+=======
 function [] = PCA_bing(data, M_pca)
+>>>>>>> 6986fb4c642db504fa4a67fc22a430e943cca502
 
 % unpack data
 x_train = data('x_train');
