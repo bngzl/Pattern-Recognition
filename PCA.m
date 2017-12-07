@@ -3,40 +3,51 @@
 clear all;
 load data/face_split_0.7.mat;
 
+% Unpack data: 
 x_train = data('x_train');
+x_test = data('x_test');
+nTrainSamples = data('nTrainSamples');
+nTestSamples = data('nTestSamples');
+nFeatures = data('nFeatures');
 
-[D, N] = size(x_train); % D=W*H of each image, N is no. of samples
+% mean face
+mean_face = mean(x_train,2);
+A = x_train - mean_face * ones(1,nTrainSamples); % Matrix of normalised training faces in each col 
 
-% Compute mean face 
-sum_x_train = x_train * ones([N,1]); 
-mean_face = sum_x_train.*(1/N); 
-% can use mean_face = mean(x_train,2);
+% cov matrix of nFeatures * nFeatures
+Sf = A * A' ./ double(nTrainSamples);
 
-% Compute covariance matrix S 
-A = x_train - mean_face*ones([1,N]); 
-S = (1/N)*(A*A'); 
-[u,evals] = eig(S); % A*u = u*D
-evals_u = diag(evals); 
-u = normc(u); % Normalise eigenvectors 
+% cov matrix of nTrainSamples * nTrainSamples 
+St = A' * A ./ double(nTrainSamples);
 
-non_zero_evals = size(find(evals_u(:)>0.001)); % no. of evecs with non zero evals <- check this! 
+[u, Du] = eig(Sf); 
+[v, Dv] = eig(St); 
 
-% Compute (1/N)ATA (PCA when D >> N) 
-S2 = (1/N)*(A'*A); 
-[v,evals] = eig(S2); 
-evals_v = diag(evals); 
-v = normc(v); 
+u = fliplr(u); 
+evals_u = flipud(diag(Du)); 
 
-% Determine if v and evals_v are identical to u and evals_u 
-a = 0; 
-for i = 1:size(evals_v,1) 
-    if evals_v(i,1)==evals_u(i,1)
-        a=a+1;
-    end 
-end
+% Plot eigenvalues against index 
+% plot(evals_u); 
+% title('Eigenvalues against index'); 
+% ylabel('Eigenvalues'); 
+% xlabel('Index'); 
+% xlim([0,250]); 
 
-%c = intersect(evals_v, evals_u); 
+v = fliplr(v); 
+evals_v = flipud(diag(Dv)); 
 
-% The M evals_v of ATA correspond to the M largest evals_u of AAT
+% Nearest Neighbour Classification: 
+M_pca = 20; 
+[u_m, ~] = eigs(Sf, M_pca); 
+w_train = (A'*u_m)';
+
+A_test = x_test - mean_face * ones(1, nTestSamples); 
+w_test = (A_test'*u_m)'; 
+
+
+    
+        
+        
+
 
 % Accuracy vs number of eigenvector plot 
