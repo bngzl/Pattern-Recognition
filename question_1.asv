@@ -116,6 +116,42 @@ correct_prediction_NN = sum(predicted_class == labels);
 accuracy_NN = double (correct_prediction_NN)/ double(nTestSamples);
 
 %%%%%%%%%%%%%%%%%%%%% Alternative Classification %%%%%%%%%%%%%%%%%%%%
+reconstruction_error = zeros(data('nClass'),nTestSamples);
+
+for i = 1:data('nClass')
+    % Separate data for all of i class: 
+    index = find(y_train == i); 
+    nTrainSamples_subset = length(index); 
+    
+    X_subset_train = x_train(:,index);
+    X_subset_mean = mean(X_subset_train, 2); 
+    X_subset_normalised = X_subset_train - X_subset_mean* ones(1,nTrainSamples_subset);
+    Sf_subset = X_subset_normalised * X_subset_normalised' ./ double(nTrainSamples_subset); 
+    
+    x_test_normalised = x_test - X_subset_mean*ones(1,nTestS
+    
+    
+    [u_m_subset, Du_m_subset] = eigs(Sf_subset, M_pca); 
+    x_estimate_subset = reconstruct(u_m_subset, nTestSamples, X_subset_normalised, X_subset_mean);
+    reconstruction_error(i,:) = x_
+    
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

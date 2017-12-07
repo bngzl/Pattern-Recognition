@@ -6,7 +6,6 @@
 clear all;
 
 % Unpack data: 
-load data/face.mat;
 load data/face_split_0.7.mat;
 x_train = data('x_train');
 x_test = data('x_test');
@@ -102,20 +101,36 @@ y_test = data('y_test');
 %plotconfusion(labels',predicted_class')
 
 %%%%%%%%%%%%%%%%%%%%% Measure Accuracy %%%%%%%%%%%%%%%%%%%%
-labels = y_test';
-predicted_class = zeros(nTestSamples,1); 
+% labels = y_test';
+% predicted_class = zeros(nTestSamples,1); 
+% 
+% for i = 1:nTestSamples
+%     W_diff = W_test(:,i)*ones(1,nTrainSamples) - W_train; 
+%     class_error(:,1) = (sqrt(vecnorm(W_diff).^2))';
+%     [class_error, index] = sort(class_error, 'ascend'); 
+%     predicted_class(i)=y_train(index(1)); 
+% end
+% 
+% correct_prediction_NN = sum(predicted_class == labels); 
+% accuracy_NN = double (correct_prediction_NN)/ double(nTestSamples);
 
-for i = 1:nTestSamples
-    W_diff = W_test(:,i)*ones(1,nTrainSamples) - W_train; 
-    class_error(:,1) = (sqrt(vecnorm(W_diff).^2))';
-    [class_error, index] = sort(class_error, 'ascend'); 
-    predicted_class(i)=y_train(index(1)); 
-end
 
-correct_prediction_NN = sum(predicted_class == labels); 
-accuracy_NN = double (correct_prediction_NN)/ double(nTestSamples);
 
-%%%%%%%%%%%%%%%%%%%%% Alternative Classification %%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
