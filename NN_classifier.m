@@ -10,7 +10,7 @@ nTestSamples = data('nTestSamples');
 nFeatures = data('nFeatures');
 
 % User Input: 
-M_pca = 100;
+M_pca = 150;
 
 % Preprocessing: 
 x_mean = mean(X_train, 2); 
