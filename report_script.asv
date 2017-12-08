@@ -1,0 +1,7 @@
+% Report script: 
+clear all; 
+load data/face.mat; 
+
+for i = 1:1
+    imwrite(mat2gray(showImage(X(:,i))),'i.jpg'); 
+end
