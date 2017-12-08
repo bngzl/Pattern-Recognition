@@ -15,7 +15,7 @@ nModels = 10;
 
 % PCA to obtain nTrainSamples-1 eigenfaces
 [efaces, evalues] = doPCA(x_train, nTrainSamples-1, nTrainSamples);
-
+    
 % Initialise accuracy matrix
 accuracy = zeros(length(2:2:312),length(2:2:51));
 
