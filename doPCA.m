@@ -1,5 +1,5 @@
 function[eigenfaces, eigenvalues]=doPCA(X_train_dataset, M_pca, nTrainSamples)
-% M_pca < N*N
+% M_pca < N
 
 x_mean = mean(X_train_dataset, 2); 
 X_normalised = X_train_dataset - x_mean * ones (1, nTrainSamples);

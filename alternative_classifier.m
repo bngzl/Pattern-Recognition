@@ -2,14 +2,7 @@
 % Unpack data: 
 clear all; 
 load data/face_split_0.7.mat; 
-X_train = data('x_train');
-X_test = data('x_test');
-nTrainSamples = data('nTrainSamples');
-nTestSamples = data('nTestSamples');
-nFeatures = data('nFeatures');
-nClass = data('nClass'); 
-y_train = data('y_train'); 
-y_test = data('y_test'); 
+
 
 reconstruction_error = zeros(data('nClass'),nTestSamples);
 M_pca = 3; 
