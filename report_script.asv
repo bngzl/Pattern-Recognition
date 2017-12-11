@@ -63,21 +63,31 @@ M_pca = 363;
 train_error = zeros(1, M_pca); 
 test_error = zeros(1, M_pca); 
 time_taken = zeros(1, M_pca); 
+theoretical_error = zeros(1, M_pca); 
+
+Sf = X_normalised_train * X_normalised_train' ./ double(nTrainSamples); 
+[~, Du] = eig(Sf); 
+evals_u = sort(diag(Du),'descend'); 
 
 for i = 1:M_pca
     tic; 
-    [v_m, ~] = eigs(St, i); 
+    [v_m, Dv_m] = eigs(St, i); 
     u_m = normc(X_normalised_train*v_m);
     
     X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
     X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+        
+    test_error(i) = (vecnorm(X_test - X_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+    train_error(i) = (vecnorm(X_train - X_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+    time_taken(i) = toc;  
     
-    test_error(i) = (sqrt(vecnorm(X_test - X_test_estimate).^2)) * ones(nTestSamples, 1)/double(nTestSamples);
-    train_error(i) = (sqrt(vecnorm(X_train - X_train_estimate).^2)) * ones(nTrainSamples, 1)/double(nTrainSamples);
-    time_taken(i) = toc;
+    theoretical_error(i) = evals_u(i+1:end)'*ones(2576-i,1);
 end
 
 yyaxis left; 
+plot(theoretical_error); 
+hold on; 
+
 plot(train_error);
 hold on;
 
@@ -88,15 +98,15 @@ yyaxis right;
 plot (time_taken); 
 xlim([0,363]); 
 
-title('Reconstruction RMS Error and Time taken/s with Varying M Eigenvectors'); 
+title('Reconstruction Error and Time taken/s with Varying M Eigenvectors'); 
 xlabel('M'); 
 
 yyaxis left; 
-ylabel ('Reconstruction Root Mean Sq Error');
+ylabel ('Reconstruction Error');
 yyaxis right; 
 ylabel ('Time Taken/s'); 
 
-legend ('Train Error', 'Test Error', 'Time Taken'); 
+legend ('Theoretical Error', 'Training Error', 'Test Error', 'Time Taken'); 
 
 %% NN Classifier Error with Various M_pca 
 
@@ -108,6 +118,7 @@ X_train = data('x_train');
 X_test = data('x_test');
 nTrainSamples = data('nTrainSamples');
 nTestSamples = data('nTestSamples');
+nClass = data('nClass');
 nFeatures = data('nFeatures');
 y_train = data('y_train'); 
 y_test = data('y_test'); 
@@ -142,17 +153,279 @@ for a = 1:M_pca
     accuracy_NN(a) = double (correct_prediction_NN)/ double(nTestSamples);
 end
 
+reconstruction_error = zeros(data('nClass'),nTestSamples); 
+
+M_pca = 7; 
+accuracy_alternate = zeros(M_pca, 1);
+
+for a = 1:M_pca
+    for i = 1:nClass
+        % Separate data for all of i class: 
+        index = find(y_train == i); 
+        nTrainSamples_subset = length(index); 
+
+        % PCA: 
+        X_subset_train = X_train(:, index); 
+        [u_m_subset, ~] = doPCA(X_subset_train, a, nTrainSamples_subset); 
+
+        % Reconstruction Error: 
+        x_subset_mean = mean(X_subset_train, 2); 
+        X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
+        X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
+        reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
+    end
+    
+    [reconstruction_error, I] = sort(reconstruction_error); 
+    correct_prediction_alternate = sum(I(1,:)' == labels); 
+    accuracy_alternate(a) = double (correct_prediction_alternate)/ double(nTestSamples);
+end
+
+subplot(2,1,1); 
 plot(accuracy_NN); 
 title('NN Classifier Accuracy with Varying M')
 xlabel('M');
-ylabel('NN Classifier Accuracy'); 
-xlim([0,363]); 
+ylabel('Accuracy'); 
+xlim([0,363]);
+subplot(2,1,2); 
+plot(accuracy_alternate); 
+title('Alternate Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([1,M_pca]); 
 
-%% NN Classifier Error with Various M_pca 
+
+%% Alternate Classifier Error with Various M_pca 
+reconstruction_error = zeros(data('nClass'),nTestSamples); 
+
+M_pca = 7; 
+accuracy_alternate = zeros(M_pca, 1);
+
+for a = 1:M_pca
+    for i = 1:nClass
+        % Separate data for all of i class: 
+        index = find(y_train == i); 
+        nTrainSamples_subset = length(index); 
+
+        % PCA: 
+        X_subset_train = X_train(:, index); 
+        [u_m_subset, ~] = doPCA(X_subset_train, a, nTrainSamples_subset); 
+
+        % Reconstruction Error: 
+        x_subset_mean = mean(X_subset_train, 2); 
+        X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
+        X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
+        reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
+    end
+    
+    [reconstruction_error, I] = sort(reconstruction_error); 
+    correct_prediction_alternate = sum(I(1,:)' == labels); 
+    accuracy_alternate(a) = double (correct_prediction_alternate)/ double(nTestSamples);
+end
+
+subplot(2,1); 
+plot(accuracy_NN); 
+title('NN Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([0,363]);
+subplot(2,2); 
+plot(accuracy_alternate); 
+title('Alternate Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([1,M_pca]); 
+
+%% Alternate Classifier Error with Various M_pca 
+
+clear all; 
+load data/face_split_0.7.mat;
+
+X_train = data('x_train');
+X_test = data('x_test');
+nTrainSamples = data('nTrainSamples');
+nTestSamples = data('nTestSamples');
+nFeatures = data('nFeatures');
+y_train = data('y_train'); 
+y_test = data('y_test'); 
+nClass = data('nClass'); 
+
+reconstruction_error = zeros(data('nClass'),nTestSamples);
+labels = y_test'; 
+
+M_pca = 7; 
+%I = zeros(data('nClass'),nTestSamples);
+accuracy_alternate = zeros(M_pca, 1);
+
+for a = 1:M_pca
+    for i = 1:nClass
+        % Separate data for all of i class: 
+        index = find(y_train == i); 
+        nTrainSamples_subset = length(index); 
+
+        % PCA: 
+        X_subset_train = X_train(:, index); 
+        [u_m_subset, ~] = doPCA(X_subset_train, a, nTrainSamples_subset); 
+
+        % Reconstruction Error: 
+        x_subset_mean = mean(X_subset_train, 2); 
+        X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
+        X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
+        reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
+    end
+    
+    [reconstruction_error, I] = sort(reconstruction_error); 
+    correct_prediction_alternate = sum(I(1,:)' == labels); 
+    accuracy_alternate(a) = double (correct_prediction_alternate)/ double(nTestSamples);
+end
+
+plot(accuracy_alternate); 
+title('Alternate Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([1,M_pca]); 
+
+%% Measuring time for AAT vs ATA 
+ 
+clear all; 
+load data/face_split_0.7.mat;
+
+X_train = data('x_train');
+nTrainSamples = data('nTrainSamples');
+M_pca = 250; 
+
+tic; 
+x_mean = mean(X_train, 2); 
+X_normalised = X_train - x_mean * ones (1, nTrainSamples);
+
+% Cov S for ATA 
+St = X_normalised' * X_normalised ./double(nTrainSamples); 
+[v, Dv] = eigs(St, M_pca);
+ATA_time = toc; 
+
+tic; 
+x_mean = mean(X_train, 2); 
+X_normalised = X_train - x_mean * ones (1, nTrainSamples);
+
+% Cov S for AAT
+Sf = X_normalised * X_normalised' ./double(nTrainSamples); 
+[u, Du] = eigs(Sf, M_pca);
+AAT_time = toc; 
+
+%% Plot Eigenvalue to Index 
+
+clear all; 
+load data/face_split_0.7.mat
+X_train = data('x_train');
+nTrainSamples = data('nTrainSamples');
+
+x_mean = mean(X_train, 2); 
+X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+Sf = X_normalised_train * X_normalised_train' ./ double(nTrainSamples);
+St = X_normalised_train' * X_normalised_train ./ double(nTrainSamples);
+
+% Analysis of Eigenvectors and Eigenvalues of Sf and St 
+[u, Du] = eig(Sf); 
+evals_u = sort(diag(Du), 'descend'); 
+
+[v, Dv] = eig(St); 
+evals_v = sort(diag(Dv), 'descend'); 
+
+plot(evals_u); 
+hold on; 
+plot(evals_v); 
+title('Magnitude of Eigenvalues');
+ylabel ('Eigenvalues');
+xlabel ('Index');
+legend('Eigenvalues u_m','Eigenvalues v_m'); 
+xlim([0,250]); 
+
+%% Displaying 150th Eigenvector of u_m 
+
+clear all; 
+load data/face_split_0.7.mat
+X_train = data('x_train');
+nTrainSamples = data('nTrainSamples');
+
+x_mean = mean(X_train, 2); 
+X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+Sf = X_normalised_train * X_normalised_train' ./ double(nTrainSamples);
+[u_m, Du_m] = eigs(Sf, 250); 
+
+imwrite(mat2gray(showImage(u_m(:,150))),'150_eigenvector.jpg');
+
+%% Reconstruction Error for 3 images of your choice 
 
 clear all; 
 load data/face_split_0.7.mat; 
+X_train = data('x_train');
+X_test = data('x_test');
+nTrainSamples = data('nTrainSamples');
+nTestSamples = data('nTestSamples');
+nFeatures = data('nFeatures');
 
-reconstruction_error = zeros(data('nClass'),nTestSamples);
+x_mean = mean(X_train, 2); 
+X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+X_normalised_test = X_test - x_mean*ones(1,nTestSamples); 
 
-for a = 1
+St = X_normalised_train' * X_normalised_train ./ double(nTrainSamples);
+ 
+train_error = zeros(1,4); 
+test_error = zeros(1, 4); 
+
+imwrite(mat2gray(showImage(X_train(:,1))),'class_1_original.jpg'); 
+imwrite(mat2gray(showImage(X_train(:,15))),'class_2_original.jpg'); 
+imwrite(mat2gray(showImage(X_test(:,5))),'test_class_1_original.jpg'); 
+imwrite(mat2gray(showImage(X_test(:,11))),'test_class_2_original.jpg'); 
+
+% M_pca = 10 
+i = 10; 
+[v_m, Dv_m] = eigs(St, i); 
+u_m = normc(X_normalised_train*v_m);
+X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
+X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+
+test_error(1) = (vecnorm(X_test - X_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+train_error(1) = (vecnorm(X_train - X_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+imwrite(mat2gray(showImage(X_train_estimate(:,1))),'class_1_M10.jpg');
+imwrite(mat2gray(showImage(X_train_estimate(:,15))),'class_2_M10.jpg');
+imwrite(mat2gray(showImage(X_test_estimate(:,5))),'test_class_1_M10.jpg'); 
+imwrite(mat2gray(showImage(X_test_estimate(:,11))),'test_class_2_M10.jpg'); 
+
+i = 50; 
+[v_m, Dv_m] = eigs(St, i); 
+u_m = normc(X_normalised_train*v_m);
+X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
+X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+
+test_error(2) = (vecnorm(X_test - X_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+train_error(2) = (vecnorm(X_train - X_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+imwrite(mat2gray(showImage(X_train_estimate(:,1))),'class_1_M50.jpg');
+imwrite(mat2gray(showImage(X_train_estimate(:,15))),'class_2_M50.jpg');
+imwrite(mat2gray(showImage(X_test_estimate(:,5))),'test_class_1_M50.jpg'); 
+imwrite(mat2gray(showImage(X_test_estimate(:,11))),'test_class_2_M50.jpg'); 
+
+i = 200; 
+[v_m, Dv_m] = eigs(St, i); 
+u_m = normc(X_normalised_train*v_m);
+X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
+X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+
+test_error(3) = (vecnorm(X_test - X_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+train_error(3) = (vecnorm(X_train - X_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+imwrite(mat2gray(showImage(X_train_estimate(:,1))),'class_1_M200.jpg');
+imwrite(mat2gray(showImage(X_train_estimate(:,15))),'class_2_M200.jpg');
+imwrite(mat2gray(showImage(X_test_estimate(:,5))),'test_class_1_M200.jpg'); 
+imwrite(mat2gray(showImage(X_test_estimate(:,11))),'test_class_2_M200.jpg'); 
+
+i = 363; 
+[v_m, Dv_m] = eigs(St, i); 
+u_m = normc(X_normalised_train*v_m);
+X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
+X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+
+test_error(4) = (vecnorm(X_test - X_test_estimate).^2) * ones(nTestSamples, 1)/double(nTestSamples);
+train_error(4) = (vecnorm(X_train - X_train_estimate).^2) * ones(nTrainSamples, 1)/double(nTrainSamples);
+imwrite(mat2gray(showImage(X_train_estimate(:,1))),'class_1_M363.jpg');
+imwrite(mat2gray(showImage(X_train_estimate(:,15))),'class_2_M363.jpg');
+imwrite(mat2gray(showImage(X_test_estimate(:,5))),'test_class_1_M363.jpg'); 
+imwrite(mat2gray(showImage(X_test_estimate(:,11))),'test_class_2_M363.jpg'); 

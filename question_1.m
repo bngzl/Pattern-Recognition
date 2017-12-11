@@ -75,23 +75,3 @@ title('Error with Varying M Eigenvectors');
 ylabel ('Reconstruction Error');
 xlabel ('M');
 legend('Theoretical error','Train error','Test error'); 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
