@@ -8,8 +8,8 @@ nTrain = uint16(train_frac * 10);
 nTest = uint16(test_frac * 10);
 nClass = 52;
 nFeatures = dims(1);
-nTrainSamples = 52*nTrain;
-nTestSamples = 52*nTest;
+nTrainSamples = nClass*nTrain;
+nTestSamples = nClass*nTest;
 
 data = containers.Map;
 data('nTrain') = nTrain;
@@ -19,10 +19,10 @@ data('nFeatures') = nFeatures;
 data('nTrainSamples') = nTrainSamples;
 data('nTestSamples') = nTestSamples;
 
-x_train = zeros(nFeatures,nTrain*52);
-y_train = zeros(1,nTrain*52);
-x_test = zeros(nFeatures,nTest*52);
-y_test = zeros(1,nTest*52);
+x_train = zeros(nFeatures,nTrain*nClass);
+y_train = zeros(1,nTrain*nClass);
+x_test = zeros(nFeatures,nTest*nClass);
+y_test = zeros(1,nTest*nClass);
 
 for classes = 1:nClass
     % for each class, take 8 random images as training data

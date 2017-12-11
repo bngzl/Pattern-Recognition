@@ -512,7 +512,136 @@ xlabel('M');
 ylabel('Accuracy'); 
 xlim([1,9]); 
 
-%% Confusion Matrix for 5 classes 
+%% Confusion Matrix for 10 classes 
 clear all; 
-load data/face_split_5_classes0.7.mat; 
+load data/face_split_10_classes_0.7.mat; 
 
+X_train = data('x_train');
+X_test = data('x_test');
+nTrainSamples = data('nTrainSamples');
+nTestSamples = data('nTestSamples');
+nFeatures = data('nFeatures');
+nClass = data('nClass'); 
+
+M_pca = 69; 
+x_mean = mean(X_train, 2); 
+X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+X_normalised_test = X_test - x_mean*ones(1,nTestSamples);  
+
+St = X_normalised_train' * X_normalised_train ./ double(nTrainSamples);
+[v_m, ~] = eigs(St, M_pca); 
+u_m = normc(X_normalised_train*v_m);
+
+W_train = (X_normalised_train'*u_m)';
+W_test = (X_normalised_test'*u_m)';
+
+y_train = data('y_train'); 
+y_test = data('y_test'); 
+
+labels = zeros(nTestSamples, data('nClass')); 
+predicted_class = zeros(nTestSamples, data('nClass')); 
+class_error = zeros(nTrainSamples,1); 
+
+% for i = 1:nTestSamples
+%     labels(i,y_test(i)) = 1; 
+% end
+% 
+% for i = 1:nTestSamples
+%     W_diff = W_test(:,i)*ones(1,nTrainSamples) - W_train; 
+%     class_error(:,1) = (sqrt(vecnorm(W_diff).^2))'; 
+%     [class_error, index] = sort(class_error, 'ascend'); 
+%     predicted_class(i,y_train(index(1))) = 1; 
+% end 
+
+% Alternate Classifier 
+% M_pca_alternate = 5; 
+% reconstruction_error = zeros(data('nClass'),nTestSamples);
+% predicted_class_alternate = zeros(nTestSamples, data('nClass')); 
+% 
+% for a = 1:nTestSamples 
+%     for i = 1:nClass 
+%         index = find(y_train == i); 
+%         nTrainSamples_subset = length(index); 
+% 
+%         X_subset_train = X_train(:,index); 
+%         [u_m_subset, ~] = doPCA(X_subset_train, M_pca_alternate, nTrainSamples_subset); 
+%         x_subset_mean = mean(X_subset_train, 2); 
+%         X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
+%         X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
+%         reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
+%     end 
+% 
+%     [~, I] = sort(reconstruction_error); 
+%     predicted_class_alternate(a,I(1,a)) = 1; 
+% end 
+% figure(); 
+% plotconfusion(labels',predicted_class');
+% figure();   
+% plotconfusion(labels', predicted_class_alternate') 
+
+%% Show Success and Failure Cases 
+%% Confusion Matrix for 10 classes 
+clear all; 
+load data/face_split_10_classes_0.7.mat; 
+
+X_train = data('x_train');
+X_test = data('x_test');
+nTrainSamples = data('nTrainSamples');
+nTestSamples = data('nTestSamples');
+nFeatures = data('nFeatures');
+nClass = data('nClass'); 
+
+M_pca = 69; 
+x_mean = mean(X_train, 2); 
+X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+X_normalised_test = X_test - x_mean*ones(1,nTestSamples);  
+
+St = X_normalised_train' * X_normalised_train ./ double(nTrainSamples);
+[v_m, ~] = eigs(St, M_pca); 
+u_m = normc(X_normalised_train*v_m);
+
+W_train = (X_normalised_train'*u_m)';
+W_test = (X_normalised_test'*u_m)';
+
+y_train = data('y_train'); 
+y_test = data('y_test'); 
+
+class_error = zeros(nTrainSamples,1); 
+labels = y_test';
+predicted_class = zeros(nTestSamples,1); 
+
+% NN Classifier:
+% Success: Target Class 10, Output Class 10 
+% Target class: 2, Output class: 5 
+
+X_test_estimate = reconstruct(u_m, nTestSamples, X_normalised_test, x_mean);
+X_train_estimate = reconstruct(u_m, nTrainSamples, X_normalised_train, x_mean);
+
+for i = 1:nTestSamples
+    W_diff = W_test(:,i)*ones(1,nTrainSamples) - W_train; 
+    class_error(:,1) = (sqrt(vecnorm(W_diff).^2))';
+    [class_error, index] = sort(class_error, 'ascend'); 
+    predicted_class(i)=y_train(index(1));
+end
+
+for i = 1:nTestSamples
+    filename = sprintf('class_%d', i);
+    if predicted_class(i) ~= labels(i)  
+        originalfilename = sprintf('original_class_%d_%d', i, floor(i./3));
+        imwrite(mat2gray(showImage(X_test(:,i))),[originalfilename,'.jpg']);
+        imwrite(mat2gray(showImage(X_test_estimate(:,i))),[filename,'.jpg']);
+        predictedfilename = sprintf('predicted_class_%d_%d', i, predicted_class(i));
+        imwrite(mat2gray(showImage(X_train(:,7*predicted_class(i)))),[predictedfilename,'.jpg']);
+    end 
+end
+
+% for i = 1:nTestSamples
+%     filename = sprintf('class_%d', i);
+%     if predicted_class(i) == labels(i)  
+%         originalfilename = sprintf('original_class_%d_%d', i, uint16(i/3));
+%         imwrite(mat2gray(showImage(X_test(:,i))),[originalfilename,'.jpg']);
+%         imwrite(mat2gray(showImage(X_test_estimate(:,i))),[filename,'.jpg']);
+%         predictedfilename = sprintf('predicted_class_%d_%d', i, predicted_class(i));
+%         imwrite(mat2gray(showImage(X_train(:,7*predicted_class(i)))),[predictedfilename,'.jpg']);
+%     end 
+% end
