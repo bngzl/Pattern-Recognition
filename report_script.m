@@ -429,3 +429,90 @@ imwrite(mat2gray(showImage(X_train_estimate(:,1))),'class_1_M363.jpg');
 imwrite(mat2gray(showImage(X_train_estimate(:,15))),'class_2_M363.jpg');
 imwrite(mat2gray(showImage(X_test_estimate(:,5))),'test_class_1_M363.jpg'); 
 imwrite(mat2gray(showImage(X_test_estimate(:,11))),'test_class_2_M363.jpg'); 
+
+%% Checking Classifier Accuracy with Train/Test Split 
+clear all; 
+accuracy_NN = zeros(9, 1); 
+accuracy_alternate = zeros(9,1); 
+
+for a = 2:9 
+    name = sprintf('data/face_split_0.%d.mat',a); 
+    load (name);  
+    
+    X_train = data('x_train');
+    X_test = data('x_test');
+    nTrainSamples = data('nTrainSamples');
+    nTestSamples = data('nTestSamples');
+    nClass = data('nClass');
+    nFeatures = data('nFeatures');
+    y_train = data('y_train'); 
+    y_test = data('y_test'); 
+    
+    x_mean = mean(X_train, 2); 
+    X_normalised_train = X_train - x_mean*ones(1,nTrainSamples); 
+    X_normalised_test = X_test - x_mean*ones(1,nTestSamples);  
+    St = X_normalised_train' * X_normalised_train ./ double(nTrainSamples);
+    
+    class_error = zeros(nTrainSamples,1); 
+    labels = y_test';
+    predicted_class = zeros(nTestSamples,1);
+    
+    M_NN = 100; 
+    M_AC = 5; 
+    
+    %NN: 
+    [v_m, ~] = eigs(St, M_NN); 
+    u_m = normc(X_normalised_train*v_m);
+    
+    W_train = (X_normalised_train'*u_m)';
+    W_test = (X_normalised_test'*u_m)';
+    
+    for i = 1:nTestSamples
+        W_diff = W_test(:,i)*ones(1,nTrainSamples) - W_train; 
+        class_error(:,1) = (sqrt(vecnorm(W_diff).^2))';
+        [class_error, index] = sort(class_error, 'ascend'); 
+        predicted_class(i)=y_train(index(1)); 
+    end
+    correct_prediction_NN = sum(predicted_class == labels); 
+    accuracy_NN(a) = double (correct_prediction_NN)/ double(nTestSamples);
+    
+    reconstruction_error = zeros(data('nClass'),nTestSamples); 
+    
+    for i = 1:nClass 
+        % Separate data for all of i class: 
+        index = find(y_train == i); 
+        nTrainSamples_subset = length(index); 
+
+        % PCA: 
+        X_subset_train = X_train(:, index); 
+        [u_m_subset, ~] = doPCA(X_subset_train, a-1, nTrainSamples_subset); 
+
+        % Reconstruction Error: 
+        x_subset_mean = mean(X_subset_train, 2); 
+        X_test_normalised = X_test - x_subset_mean * ones(1,nTestSamples); 
+        X_estimate = reconstruct(u_m_subset, nTestSamples, X_test_normalised, x_subset_mean); 
+        reconstruction_error(i,:) = sqrt(vecnorm(X_test - X_estimate).^2);  
+    end
+    
+    [reconstruction_error, I] = sort(reconstruction_error); 
+    correct_prediction_alternate = sum(I(1,:)' == labels); 
+    accuracy_alternate(a) = double (correct_prediction_alternate)/ double(nTestSamples);
+end 
+
+subplot(2,1,1); 
+plot(accuracy_NN); 
+title('NN Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([0,9]);
+subplot(2,1,2); 
+plot(accuracy_alternate,'red'); 
+title('Alternate Classifier Accuracy with Varying M')
+xlabel('M');
+ylabel('Accuracy'); 
+xlim([1,9]); 
+
+%% Confusion Matrix for 5 classes 
+clear all; 
+load data/face_split_5_classes0.7.mat; 
+
